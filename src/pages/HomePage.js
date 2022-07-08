@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Route, Switch, Redirect } from "react-router-dom";
-import { Routes } from "../routes";
+import { Route, Routes, Navigate } from "react-router-dom";
+import { RoutesPage } from "../routes";
 
 // pages
-import Presentation from "./Presentation";
-import Upgrade from "./Upgrade";
+// import Presentation from "./Presentation";
+// import Upgrade from "./Upgrade";
 import DashboardOverview from "./dashboard/DashboardOverview";
-import Transactions from "./Transactions";
-import Settings from "./Settings";
-import BootstrapTables from "./tables/BootstrapTables";
-import Signin from "./examples/Signin";
-import Signup from "./examples/Signup";
-import ForgotPassword from "./examples/ForgotPassword";
-import ResetPassword from "./examples/ResetPassword";
-import Lock from "./examples/Lock";
-import NotFoundPage from "./examples/NotFound";
-import ServerError from "./examples/ServerError";
+// import Transactions from "./Transactions";
+// import Settings from "./Settings";
+// import BootstrapTables from "./tables/BootstrapTables";
+// import Signin from "./examples/Signin";
+// import Signup from "./examples/Signup";
+// import ForgotPassword from "./examples/ForgotPassword";
+// import ResetPassword from "./examples/ResetPassword";
+// import Lock from "./examples/Lock";
+// import NotFoundPage from "./examples/NotFound";
+// import ServerError from "./examples/ServerError";
 
 // documentation pages
 import DocsOverview from "./documentation/DocsOverview";
@@ -48,10 +48,10 @@ import Tables from "./components/Tables";
 import Tabs from "./components/Tabs";
 import Tooltips from "./components/Tooltips";
 import Toasts from "./components/Toasts";
+import componentsList from './componentsList';
 
 const RouteWithLoader = ({ component: Component, ...rest }) => {
   const [loaded, setLoaded] = useState(false);
-
   useEffect(() => {
     const timer = setTimeout(() => setLoaded(true), 1000);
     return () => clearTimeout(timer);
@@ -64,7 +64,7 @@ const RouteWithLoader = ({ component: Component, ...rest }) => {
 
 const RouteWithSidebar = ({ component: Component, ...rest }) => {
   const [loaded, setLoaded] = useState(false);
-
+  const [jwtFlag, setJwtFlag] = useState(false)
   useEffect(() => {
     const timer = setTimeout(() => setLoaded(true), 1000);
     return () => clearTimeout(timer);
@@ -81,68 +81,90 @@ const RouteWithSidebar = ({ component: Component, ...rest }) => {
     localStorage.setItem('settingsVisible', !showSettings);
   }
 
-  return (
-    <Route {...rest} render={props => (
-      <>
-        <Preloader show={loaded ? false : true} />
-        <Sidebar />
+  // return (
+  //   <Route {...rest} render={props => (
+  //     <>
+  //       <Preloader show={loaded ? false : true} />
+  //       <Sidebar />
+  //       {/* {console.log('Props', props)} */}
+  //       <main className="content">
+  //         <Navbar />
+  //         <Component {...props} />
+  //         <Footer toggleSettings={toggleSettings} showSettings={showSettings} />
+  //       </main>
+  //     </>
+  //   )}
+  //   />
+  // );
 
-        <main className="content">
-          <Navbar />
-          <Component {...props} />
-          <Footer toggleSettings={toggleSettings} showSettings={showSettings} />
-        </main>
-      </>
-    )}
+  return (
+    <Route
+      {...rest}
+      render={props => {
+        return jwtFlag ? (
+          <>
+            <Preloader show={loaded ? false : true} />
+            <Sidebar />
+            {/* {console.log('Props', props)} */}
+            <main className="content">
+              <Navbar />
+              <Component {...props} />
+              <Footer toggleSettings={toggleSettings} showSettings={showSettings} />
+            </main>
+          </>
+        ) : (
+          <Navigate to={{ pathname: '/examples/sign-in', state: { from: props.location } }} />
+        )
+      }}
     />
-  );
+  )
 };
 
-export default () => (
-  <Switch>
-    <RouteWithLoader exact path={Routes.Presentation.path} component={Presentation} />
-    <RouteWithLoader exact path={Routes.Signin.path} component={Signin} />
-    <RouteWithLoader exact path={Routes.Signup.path} component={Signup} />
-    <RouteWithLoader exact path={Routes.ForgotPassword.path} component={ForgotPassword} />
-    <RouteWithLoader exact path={Routes.ResetPassword.path} component={ResetPassword} />
-    <RouteWithLoader exact path={Routes.Lock.path} component={Lock} />
-    <RouteWithLoader exact path={Routes.NotFound.path} component={NotFoundPage} />
-    <RouteWithLoader exact path={Routes.ServerError.path} component={ServerError} />
 
-    {/* pages */}
-    <RouteWithSidebar exact path={Routes.DashboardOverview.path} component={DashboardOverview} />
-    <RouteWithSidebar exact path={Routes.Upgrade.path} component={Upgrade} />
-    <RouteWithSidebar exact path={Routes.Transactions.path} component={Transactions} />
-    <RouteWithSidebar exact path={Routes.Settings.path} component={Settings} />
-    <RouteWithSidebar exact path={Routes.BootstrapTables.path} component={BootstrapTables} />
+export default (props) => {
+  // if (1 === 1) setJwtFlag(true)
+  console.log('Dashboard', DashboardOverview)
+  // const components_List = props.list.map((lists, index ) => {
+  //   const com = componentsList[lists.component]
+  //   if(lists.component === 'DashboardOverview') console.log('com', componentsList[lists.component])
+  //   return <Route exact key="{index}" path={lists.path} element={React.createElement(com)} />
+  // })
+  const components_List = props.list.map((lists, index ) => {
+    if(lists.with === 'RouteWithLoader') {
+      return ( <RouteWithLoader exact key="{index}" path={lists.path} component={componentsList[lists.component]} />)
+    } else if(lists.with === 'RouteWithSidebar') {
+      return ( <RouteWithSidebar exact key="{index}" path={lists.path} component={componentsList[lists.component]} />)
+    }
+  })
+  console.log('components_List', components_List)
+  return (
+    <Routes>
+      { React.createElement(components_List)}
+      {/* <Route exact key="{index}" path={RoutesPage.Accordions.path} element={<Accordion/>} />
+      <Route exact key="{index}" path='' element={<DashboardOverview />} /> */}
+      {/* components */}
+      <RouteWithSidebar exact path={RoutesPage.Accordions.path} component={Accordion} />
+      <RouteWithSidebar exact path={RoutesPage.Alerts.path} component={Alerts} />
+      <RouteWithSidebar exact path={RoutesPage.Badges.path} component={Badges} />
+      <RouteWithSidebar exact path={RoutesPage.Breadcrumbs.path} component={Breadcrumbs} />
+      <RouteWithSidebar exact path={RoutesPage.Buttons.path} component={Buttons} />
+      <RouteWithSidebar exact path={RoutesPage.Forms.path} component={Forms} />
+      <RouteWithSidebar exact path={RoutesPage.Modals.path} component={Modals} />
+      <RouteWithSidebar exact path={RoutesPage.Navs.path} component={Navs} />
+      <RouteWithSidebar exact path={RoutesPage.Navbars.path} component={Navbars} />
+      <RouteWithSidebar exact path={RoutesPage.Pagination.path} component={Pagination} />
+      <RouteWithSidebar exact path={RoutesPage.Popovers.path} component={Popovers} />
+      <RouteWithSidebar exact path={RoutesPage.Progress.path} component={Progress} />
+      <RouteWithSidebar exact path={RoutesPage.Tables.path} component={Tables} />
+      <RouteWithSidebar exact path={RoutesPage.Tabs.path} component={Tabs} />
+      <RouteWithSidebar exact path={RoutesPage.Tooltips.path} component={Tooltips} />
+      <RouteWithSidebar exact path={RoutesPage.Toasts.path} component={Toasts} />
 
-    {/* components */}
-    <RouteWithSidebar exact path={Routes.Accordions.path} component={Accordion} />
-    <RouteWithSidebar exact path={Routes.Alerts.path} component={Alerts} />
-    <RouteWithSidebar exact path={Routes.Badges.path} component={Badges} />
-    <RouteWithSidebar exact path={Routes.Breadcrumbs.path} component={Breadcrumbs} />
-    <RouteWithSidebar exact path={Routes.Buttons.path} component={Buttons} />
-    <RouteWithSidebar exact path={Routes.Forms.path} component={Forms} />
-    <RouteWithSidebar exact path={Routes.Modals.path} component={Modals} />
-    <RouteWithSidebar exact path={Routes.Navs.path} component={Navs} />
-    <RouteWithSidebar exact path={Routes.Navbars.path} component={Navbars} />
-    <RouteWithSidebar exact path={Routes.Pagination.path} component={Pagination} />
-    <RouteWithSidebar exact path={Routes.Popovers.path} component={Popovers} />
-    <RouteWithSidebar exact path={Routes.Progress.path} component={Progress} />
-    <RouteWithSidebar exact path={Routes.Tables.path} component={Tables} />
-    <RouteWithSidebar exact path={Routes.Tabs.path} component={Tabs} />
-    <RouteWithSidebar exact path={Routes.Tooltips.path} component={Tooltips} />
-    <RouteWithSidebar exact path={Routes.Toasts.path} component={Toasts} />
+      {/*  */}
+      
 
-    {/* documentation */}
-    <RouteWithSidebar exact path={Routes.DocsOverview.path} component={DocsOverview} />
-    <RouteWithSidebar exact path={Routes.DocsDownload.path} component={DocsDownload} />
-    <RouteWithSidebar exact path={Routes.DocsQuickStart.path} component={DocsQuickStart} />
-    <RouteWithSidebar exact path={Routes.DocsLicense.path} component={DocsLicense} />
-    <RouteWithSidebar exact path={Routes.DocsFolderStructure.path} component={DocsFolderStructure} />
-    <RouteWithSidebar exact path={Routes.DocsBuild.path} component={DocsBuild} />
-    <RouteWithSidebar exact path={Routes.DocsChangelog.path} component={DocsChangelog} />
-
-    <Redirect to={Routes.NotFound.path} />
-  </Switch>
-);
+      {/* <Redirect to={RoutesPage.NotFound.path} /> */}
+      {/* <Navigate to={RoutesPage.NotFound.path} /> */}
+    </Routes>
+  )
+};

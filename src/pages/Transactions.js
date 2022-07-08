@@ -2,10 +2,12 @@ import React from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faCog, faHome, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { Col, Row, Form, Button, ButtonGroup, Breadcrumb, InputGroup, Dropdown } from '@themesberg/react-bootstrap';
-
+import { useLocation } from 'react-router-dom';
 import { TransactionsTable } from "../components/Tables";
 
-export default () => {
+export default (props) => {
+  const { state } = useLocation();
+  console.log('Transaction props:', state || {})
   return (
     <>
       <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">

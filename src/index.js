@@ -15,21 +15,20 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { HashRouter } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 
 // core styles
 import "./scss/volt.scss";
-
 // vendor styles
 import "react-datetime/css/react-datetime.css";
 
-import HomePage from "./pages/HomePage";
+import HomePage from "./pages/HomePage1";
 import ScrollToTop from "./components/ScrollToTop";
 
 ReactDOM.render(
-  <HashRouter>
+  <BrowserRouter>
     <ScrollToTop />
     <HomePage />
-  </HashRouter>,
+  </BrowserRouter>,
   document.getElementById("root")
 );

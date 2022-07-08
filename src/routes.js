@@ -1,7 +1,8 @@
 
-export const Routes = {
+export const RoutesPage = {
     // pages
     Presentation: { path: "/" },
+    // Signin: { path: "/" },
     DashboardOverview: { path: "/dashboard/overview" },
     Transactions: { path: "/transactions" },
     Settings: { path: "/settings" },
@@ -16,6 +17,7 @@ export const Routes = {
     Lock: { path: "/examples/lock" },
     NotFound: { path: "/examples/404" },
     ServerError: { path: "/examples/500" },
+    MaterialTable: { path: "/materialtable" },
 
     // docs
     DocsOverview: { path: "/documentation/overview" },
