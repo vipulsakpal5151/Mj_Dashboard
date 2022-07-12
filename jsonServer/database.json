@@ -134,7 +134,7 @@
       "id": 2,
       "email": "techie@email.com",
       "password": "techie",
-      "token": ""
+      "token": "fgfchg"
     },
     {
       "email": "nilson@email.com",
@@ -183,6 +183,24 @@
       "password": "bruno",
       "token": "fddfgfdgdfgdfgdf",
       "id": 10
+    },
+    {
+      "filters": [],
+      "orderDirection": "",
+      "page": 0,
+      "pageSize": 5,
+      "search": "",
+      "totalCount": 0,
+      "id": 11
+    },
+    {
+      "filters": [],
+      "orderDirection": "",
+      "page": 0,
+      "pageSize": 5,
+      "search": "",
+      "totalCount": 0,
+      "id": 12
     }
   ],
   "olympic": [
@@ -6752,6 +6770,112 @@
       "master": {
         "site": true,
         "materialtable": true
+      }
+    }
+  ],
+  "usersTableData": [
+    {
+      "tableAction": [
+        "edit"
+      ],
+      "columnData": [
+        {
+          "title": "ID",
+          "field": "id"
+        },
+        {
+          "title": "Email",
+          "field": "email"
+        },
+        {
+          "title": "Token",
+          "field": "token"
+        },
+        {
+          "title": "Password",
+          "field": "password"
+        }
+      ]
+    }
+  ],
+  "roles": [
+    {
+      "id": "1",
+      "name": "Admin",
+      "description": "Admin roles",
+      "assign": {
+        "access_control": {
+          "users": {
+            "flag": true
+          },
+          "roles": {
+            "flag": false
+          }
+        }
+      }
+    },
+    {
+      "id": "2",
+      "name": "Supervisor",
+      "description": "Supervisor roles",
+      "assign": {
+        "access_control": {
+          "users": {
+            "flag": false,
+            "operation": {
+              "edit": false,
+              "create": false
+            }
+          },
+          "roles": {
+            "flag": false,
+            "operation": {
+              "edit": false,
+              "create": false
+            }
+          }
+        }
+      }
+    }
+  ],
+  "rolesTableData": [
+    {
+      "tableAction": [
+        "edit"
+      ],
+      "columnData": [
+        {
+          "title": "ID",
+          "field": "id"
+        },
+        {
+          "title": "Name",
+          "field": "name"
+        },
+        {
+          "title": "Description",
+          "field": "description"
+        }
+      ]
+    }
+  ],
+  "tabsAndOperationTable": [
+    {
+      "access_control": {
+        "users": {
+          "flag": false,
+          "operation": {
+            "edit": false,
+            "create": false
+          }
+        },
+        "roles": {
+          "flag": false,
+          "operation": {
+            "edit": false,
+            "create": false
+          }
+        }
       }
     }
   ]

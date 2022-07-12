@@ -2,59 +2,66 @@
 // https://github.com/vikas62081/material-table-YT/blob/serverSidePaginationSearchFilterSorting/src/App.js
 import React from "react";
 import MaterialTable from 'material-table'
-import axiosHandler from "../utils/axiosHandler";
+import axiosHandler from "../../utils/axiosHandler";
 import { Form, Row, Col, Card, Button } from '@themesberg/react-bootstrap';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import common_function from "../utils/common_function";
+import common_function from "../../utils/common_function";
+import loggers from "../../utils/loggers";
+
 // As a component
 const MaterialTableConfig = (props) => {
-  console.log('PROPS++++++++++++++', props)
-  const defaultMaterialTheme = createTheme({
-    palette: {
-      primary: {
-        main: '#4A16DA',
-        contrastText: 'white',
-      },
-    },
-  });
-  const { columnsData, baseUrl } = props
-  // const navigate = useNavigate();
-  let actionData = [] 
-  if (columnsData && columnsData[0] && columnsData[0].columnData) {
-    columnsData[0].tableAction.map((lists, index ) => {
-      const dataForAction = {
-        icon: lists,
-        tooltip: `${lists} User`,
-        onClick: (event, rowData) => {
-          console.log({ event, rowData })
-          props.data.setDataForEditPage({ event, rowData })
-          props.data.setShowFlag(true)
-          // navigate('/transactions', { state: { event, rowData } })
-        }
-      }
-      actionData.push(dataForAction)
-    })
-  }
-  return (
+    loggers.logs('userController', 'MaterialTableConfig', 'props', JSON.stringify(props))
 
-    <Card>
-    <Card.Header as="h5">
-      <Row>
-        <Col lg={12} md={12} sm={12} xs={12}  className="mb-3">
-          {/* <b>{((window.location.pathname.split("/")[1]).replace("_", " ")).toUpperCase()} TABLE</b> */}
-          <b>{
-              window.location.pathname.split("/").map((lists, key) => {
-                if (lists) {
-                  return `${common_function.titleCase(lists.replace("_", " "))} ${key >= (window.location.pathname.split("/").length)-1 ? '' : ' > '}`
+    // Create Theme For Material Table
+    const defaultMaterialTheme = createTheme({
+        palette: {
+        primary: {
+            main: '#4A16DA',
+            contrastText: 'white',
+        },
+        },
+    });
+
+    // Fetch data from logs
+    const { columnsData, baseUrl } = props
+    // const navigate = useNavigate();
+
+    // actionData for:  Material table action column. Like edit, view, delete
+    let actionData = [] 
+    if (columnsData && columnsData[0] && columnsData[0].columnData) {
+        columnsData[0].tableAction.map((lists, index ) => {
+            const dataForAction = {
+                icon: lists,
+                tooltip: `${lists} User`,
+                onClick: (event, rowData) => {
+                console.log({ event, rowData })
+                props.data.setDataForEditPage({ event, rowData })
+                props.data.setShowFlag(true)
+                // navigate('/transactions', { state: { event, rowData } })
                 }
-              })
-            } Table</b>
-        </Col>
-      </Row>
-    </Card.Header>
-    <Card.Body>
-    <Row>
-    <ThemeProvider theme={defaultMaterialTheme}>
+            }
+            actionData.push(dataForAction)
+        })
+    }
+
+    return (
+        <Card>
+        <Card.Header as="h5">
+        <Row>
+            <Col lg={12} md={12} sm={12} xs={12}  className="mb-3">
+            <b>{
+                window.location.pathname.split("/").map((lists, key) => {
+                    if (lists) {
+                    return `${common_function.titleCase(lists.replace("_", " "))} ${key >= (window.location.pathname.split("/").length)-1 ? '' : ' > '}`
+                    }
+                })
+                } Table</b>
+            </Col>
+        </Row>
+        </Card.Header>
+        <Card.Body>
+        <Row>
+        <ThemeProvider theme={defaultMaterialTheme}>
       <MaterialTable
         actions={actionData}
         title="Olympic Data"
@@ -83,11 +90,10 @@ const MaterialTableConfig = (props) => {
             url += `&_limit=${query.pageSize}`
 
             // fetch Table data
-            const tableData = await axiosHandler.request({ method: 'GET', requestUrl: url})
+            const tableData = await axiosHandler.request({ method: 'POST', requestUrl: baseUrl, data: query})
             console.log('MaterialTableConfig.js : MaterialTableConfig: tableData : ', tableData)
-            console.log('MaterialTableConfig.js : MaterialTableConfig: tableData : ', tableData.headers['x-total-count'])
-            if (tableData && tableData.data && tableData.data.length > 0) {
-              return { data: tableData.data, page: query.page, totalCount: parseInt(tableData.headers['x-total-count']) }
+            if (tableData && tableData.data) {
+              return { data: tableData.data.merchantList, page: query.page, totalCount: parseInt(tableData.data.totalCount) }
             }
             return { data: [], page: query.page, totalCount: 0 }
           } catch (error) {
@@ -99,23 +105,23 @@ const MaterialTableConfig = (props) => {
           }
         }
       />
-    </ThemeProvider>
-    </Row>
-    </Card.Body>
-    </Card>
-    
-  );
+        </ThemeProvider>
+        </Row>
+        </Card.Body>
+        </Card>
+        
+    );
 };
 
 /**
  * Desciption : Use as a function. Fetch data for material table columns with additional data
  * @returns 
  */
-const materialTableColumnData = async (columnDataUrl) => {
+ const materialTableColumnData = async (columnDataUrl) => {
   try {
-    const fetchData = await axiosHandler.request({ method: 'GET', requestUrl: columnDataUrl })
-    console.log('MaterialTableConfig.js : materialTableColumnData: fetchData : ', fetchData)
-    if (fetchData && fetchData.data && fetchData.data.length > 0) return fetchData.data
+    const fetchData = await axiosHandler.request({ method: 'POST', requestUrl: columnDataUrl })
+    console.log('MaterialTableConfig.js : materialTableColumnData: fetchData : ', fetchData.data)
+    if (fetchData && fetchData.data) return fetchData.data.fetchColumnData
     return []
   } catch (error) {
     console.log('MaterialTableConfig.js : materialTableColumnData : error : ', error)

@@ -24,3 +24,12 @@ export const authTokenState = (token) => {
          })
       }
  }
+
+export const tabsAndOperationData = (tabsAndOperationData) => {
+     return (dispatch) => {
+         dispatch({
+              type: 'tabsAndOperationData',
+              payload: tabsAndOperationData
+         })
+      }
+ }

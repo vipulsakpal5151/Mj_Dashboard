@@ -1,6 +1,6 @@
 import axiosConnection from "./axiosConnection"
 
-const request = async ({ method, requestUrl = null, withBaseUrl = null, filterData = {}, data = {}, headers = {} }) => {
+const request = async ({ method, requestUrl = null, withBaseUrl = null, filterData = {}, data = {}, headers = {'content-type': 'application/json'} }) => {
     console.log('axiosHandler : request: fileds : ', { method, requestUrl, withBaseUrl, filterData, data, headers })
     let response = {}
     let { instance } = axiosConnection()

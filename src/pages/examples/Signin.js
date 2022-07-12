@@ -9,7 +9,7 @@ import { useState, useEffect } from "react";
 import { RoutesPage } from "../../routes";
 import BgImage from "../../assets/img/illustrations/signin.svg";
 import loginController from "../../controller/login/loginController"
-
+import { Checkbox, FormControlLabel, Box } from '@mui/material';
 export default () => {
   const navigate = useNavigate();
   const initialValues = { email: "", password: "" };
@@ -24,6 +24,11 @@ export default () => {
   };
 
   const handleSubmit = async (e, actions) => {
+    e.preventDefault();
+    var data = new FormData(e.target);
+    let formObject = Object.fromEntries(data.entries());
+    console.log('formObject',formObject);
+    console.log('Signin.js : handleSubmit : event : ', e.target)
     const formData = {
       email: e.target.email.value,
       password: e.target.password.value
@@ -38,10 +43,10 @@ export default () => {
       console.log('Signin.js : handleSubmit : formSubmitValidation : ', formSubmitValidation)
       if (formSubmitValidation.status == 200) { 
         console.log('Signin.js : handleSubmit : status : ', formSubmitValidation.status)
-        navigate('/dashboard/overview', { replace: true })
+        // navigate('/dashboard/overview', { replace: true })
       }
     }
-    setIsSubmit(true);
+    // setIsSubmit(true);
   };
 
   useEffect(() => {
@@ -69,6 +74,36 @@ export default () => {
     }
     return errors;
   };
+
+
+  const [checked, setChecked] = React.useState([true, false]);
+
+  const handleChange1 = (event) => {
+    setChecked([event.target.checked, event.target.checked]);
+  };
+
+  const handleChange2 = (event) => {
+    setChecked([event.target.checked, checked[1]]);
+  };
+
+  const handleChange3 = (event) => {
+    setChecked([checked[0], event.target.checked]);
+  };
+
+  const children = (
+    <Box sx={{ display: 'flex', flexDirection: 'column', ml: 3 }}>
+      <FormControlLabel
+        label="Child 1"
+        control={<Checkbox checked={checked[0]} onChange={handleChange2} />}
+        name="child1"
+      />
+      <FormControlLabel
+        label="Child 2"
+        control={<Checkbox checked={checked[1]} onChange={handleChange3} />}
+        name="child2"
+      />
+    </Box>
+  );
 
   return (
     <main>
@@ -120,6 +155,18 @@ export default () => {
                       <Card.Link className="small text-end">Lost password?</Card.Link>
                     </div>
                   </Form.Group>
+                  <FormControlLabel
+                    label="Parent"
+                    control={
+                      <Checkbox
+                        checked={checked[0] && checked[1]}
+                        indeterminate={checked[0] !== checked[1]}
+                        onChange={handleChange1}
+                        name="parent1"
+                      />
+                    }
+                  />
+                  {children}
                   <Button variant="primary" type="submit" className="w-100">
                     Sign in
                   </Button>

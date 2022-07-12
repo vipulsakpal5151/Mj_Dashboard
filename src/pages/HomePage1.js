@@ -7,6 +7,10 @@ import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import Preloader from "../components/Preloader";
+import actionCreators from "../redux_state/index";
+import { useDispatch } from "react-redux";
+import { bindActionCreators } from "redux"
+import axiosHandler from "../utils/axiosHandler";
 
 // For Page Like Login Registration
 const RouteWithLoader = (props) => {
@@ -41,11 +45,11 @@ const RouteWithSidebar = (props) => {
     localStorage.setItem('settingsVisible', !showSettings);
   }
 
-  const { Component } = props
+  const { Component, data } = props
   return jwtFlag ? (
       <>
         <Preloader show={loaded ? false : true} />
-        <Sidebar data={props.data.sidebarData}/>
+        <Sidebar data={{sideBar: data.sideBar}}/>
         <main className="content">
           <Navbar />
           <Component />
@@ -67,29 +71,39 @@ export const ProtectedRoute = ({ children }) => {
 };
 
 export default () => {
-  const [sidebarData, setSidebarData] = useState([])
+  const dispatch = useDispatch()
+  const actions = bindActionCreators(actionCreators, dispatch)
   const fetchColumnData = async () => {
-    let sideBar = []
-    const axiosHandler = require("../utils/axiosHandler");
-    const sidebarRequest = await axiosHandler.request({ method: 'GET', requestUrl: 'http://localhost:3004/sidebar'})
+    let sideBar = [{}]
+    const sidebarRequest = await axiosHandler.request({ method: 'GET', requestUrl: 'http://localhost:3004/tabsAndOperationTable'})
     console.log('MaterialTableConfig.js : materialTableColumnData: fetchData : ', sidebarRequest)
     if (sidebarRequest && sidebarRequest.data && sidebarRequest.data.length > 0) sideBar = sidebarRequest.data
-    setSidebarData(sideBar)
+    actions.tabsAndOperationData(sideBar[0])
   }
   useEffect(()=>{
     fetchColumnData()
-  }, [])
+  })
 
-  // Creating all Route components
+  const sideBar = {
+    access_control: {
+      users: { flag: true, icon: null },
+      roles: { flag: true, icon: null }
+    }
+  }
+  
   const components_List = componentsList.componentListForRoutes.map((lists, index ) => {
     const com = componentsList[lists.component]
-    if (lists.with === 'RouteWithLoader') return <Route exact key={index} path={lists.path} element={<RouteWithLoader Component={com}/>} />
-    else if (lists.with === 'RouteWithSidebar') {
-      return <Route exact key={index} path={lists.path} element={
-        <ProtectedRoute>
-          <RouteWithSidebar Component={com} data={{ sidebarData }}/>
-        </ProtectedRoute>
-      } />
+    if (lists.parent in sideBar && lists.child in sideBar[lists.parent]) sideBar[lists.parent][lists.child].component = lists.component
+    // console.log('Lists =====', (lists.parent !== 'singleWithParent' ? lists.parent in sideBar : false))
+    if (lists.parent === 'singleWithParent' || (lists.parent in sideBar && lists.child in sideBar[lists.parent] && sideBar[lists.parent][lists.child].flag === true)) {
+      if (lists.with === 'RouteWithLoader') return <Route exact key={index} path={lists.path} element={<RouteWithLoader Component={com}/>} />
+      else if (lists.with === 'RouteWithSidebar') {
+        return <Route exact key={index} path={lists.path} element={
+          <ProtectedRoute>
+            <RouteWithSidebar Component={com} data={{sideBar}}/>
+          </ProtectedRoute>
+        } />
+      }
     }
   })
 

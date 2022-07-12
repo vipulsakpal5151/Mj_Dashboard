@@ -13,8 +13,10 @@ import { RoutesPage } from "../routes";
 // import ThemesbergLogo from "../assets/img/themesberg.svg";
 import ReactHero from "../assets/img/technologies/react-hero-logo.svg";
 import ProfilePicture from "../assets/img/team/profile-picture-3.jpg";
+import common_function from "../utils/common_function";
 
-export default (props = {}) => {
+export default (propsData = {}) => {
+  console.log('Sidebar Data ==== ', propsData.data.sideBar)
   const location = useLocation();
   const { pathname } = location;
   const [show, setShow] = useState(false);
@@ -68,6 +70,22 @@ export default (props = {}) => {
     );
   };
 
+  const sideBarData = propsData.data.sideBar
+  const NavItemList = Object.keys(sideBarData).map((lists) => {
+    return (
+      <CollapsableNavItem eventKey={`${lists}/`} key={lists} title={common_function.titleCase(lists.split("_").join(" "))} icon={faTable}>
+        {  
+          Object.keys(sideBarData[lists]).map((key) => {
+            if (sideBarData[lists][key].flag === true) {
+              return (
+                <NavItem title={common_function.titleCase(key)} key={key} link={RoutesPage[sideBarData[lists][key].component].path} />
+              )
+            }
+          })
+        }
+      </CollapsableNavItem>
+    )
+  })
   return (
     <>
       <Navbar expand={false} collapseOnSelect variant="dark" className="navbar-theme-primary px-4 d-md-none">
@@ -102,60 +120,9 @@ export default (props = {}) => {
 
               <NavItem title="Overview" link={RoutesPage.DashboardOverview.path} icon={faChartPie} />
               {/* <NavItem external title="Messages" link="https://demo.themesberg.com/volt-pro-react/#/messages" target="_blank" badgeText="Pro" icon={faInbox} /> */}
-              <NavItem title="Transactions" icon={faHandHoldingUsd} link={RoutesPage.Transactions.path} />
               <NavItem title="MaterialTable" icon={faHandHoldingUsd} link={RoutesPage.MaterialTable.path} />
-              <NavItem title="Settings" icon={faCog} link={RoutesPage.Settings.path} />
-              {/* <NavItem external title="Calendar" link="https://demo.themesberg.com/volt-pro-react/#/calendar" target="_blank" badgeText="Pro" icon={faCalendarAlt} /> */}
-              {/* <NavItem external title="Map" link="https://demo.themesberg.com/volt-pro-react/#/map" target="_blank" badgeText="Pro" icon={faMapPin} /> */}
-
-              <CollapsableNavItem eventKey="tables/" title="Tables" icon={faTable}>
-                <NavItem title="Bootstrap Table" link={RoutesPage.BootstrapTables.path} />
-              </CollapsableNavItem>
-
-              {/* <CollapsableNavItem eventKey="examples/" title="Page Examples" icon={faFileAlt}>
-                <NavItem title="Sign In" link={RoutesPage.Signin.path} />
-                <NavItem title="Sign Up" link={RoutesPage.Signup.path} />
-                <NavItem title="Forgot password" link={RoutesPage.ForgotPassword.path} />
-                <NavItem title="Reset password" link={RoutesPage.ResetPassword.path} />
-                <NavItem title="Lock" link={RoutesPage.Lock.path} />
-                <NavItem title="404 Not Found" link={RoutesPage.NotFound.path} />
-                <NavItem title="500 Server Error" link={RoutesPage.ServerError.path} />
-              </CollapsableNavItem> */}
-
-              {/* <NavItem external title="Plugins" link="https://demo.themesberg.com/volt-pro-react/#/plugins/datatable" target="_blank" badgeText="Pro" icon={faChartPie} /> */}
-
-              <Dropdown.Divider className="my-3 border-indigo" />
-
-              {/* <CollapsableNavItem eventKey="documentation/" title="Getting Started" icon={faBook}>
-                <NavItem title="Overview" link={RoutesPage.DocsOverview.path} />
-                <NavItem title="Download" link={RoutesPage.DocsDownload.path} />
-                <NavItem title="Quick Start" link={RoutesPage.DocsQuickStart.path} />
-                <NavItem title="License" link={RoutesPage.DocsLicense.path} />
-                <NavItem title="Folder Structure" link={RoutesPage.DocsFolderStructure.path} />
-                <NavItem title="Build Tools" link={RoutesPage.DocsBuild.path} />
-                <NavItem title="Changelog" link={RoutesPage.DocsChangelog.path} />
-              </CollapsableNavItem> */}
-              <CollapsableNavItem eventKey="components/" title="Components" icon={faBoxOpen}>
-                <NavItem title="Accordion" link={RoutesPage.Accordions.path} />
-                <NavItem title="Alerts" link={RoutesPage.Alerts.path} />
-                <NavItem title="Badges" link={RoutesPage.Badges.path} />
-                <NavItem external title="Widgets" link="https://demo.themesberg.com/volt-pro-react/#/components/widgets" target="_blank" badgeText="Pro" />
-                <NavItem title="Breadcrumbs" link={RoutesPage.Breadcrumbs.path} />
-                <NavItem title="Buttons" link={RoutesPage.Buttons.path} />
-                <NavItem title="Forms" link={RoutesPage.Forms.path} />
-                <NavItem title="Modals" link={RoutesPage.Modals.path} />
-                <NavItem title="Navbars" link={RoutesPage.Navbars.path} />
-                <NavItem title="Navs" link={RoutesPage.Navs.path} />
-                <NavItem title="Pagination" link={RoutesPage.Pagination.path} />
-                <NavItem title="Popovers" link={RoutesPage.Popovers.path} />
-                <NavItem title="Progress" link={RoutesPage.Progress.path} />
-                <NavItem title="Tables" link={RoutesPage.Tables.path} />
-                <NavItem title="Tabs" link={RoutesPage.Tabs.path} />
-                <NavItem title="Toasts" link={RoutesPage.Toasts.path} />
-                <NavItem title="Tooltips" link={RoutesPage.Tooltips.path} />
-              </CollapsableNavItem>
-              {/* <NavItem external title="Themesberg" link="https://themesberg.com" target="_blank" image={ThemesbergLogo} /> */}
-              <Button as={Link} to={RoutesPage.Upgrade.path} variant="secondary" className="upgrade-to-pro"><FontAwesomeIcon icon={faRocket} className="me-1" /> Upgrade to Pro</Button>
+              {NavItemList}
+              
             </Nav>
           </div>
         </SimpleBar>

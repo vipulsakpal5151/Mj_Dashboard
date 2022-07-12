@@ -1,11 +1,14 @@
 // Reference from HERE
 // https://github.com/vikas62081/material-table-YT/blob/serverSidePaginationSearchFilterSorting/src/App.js
-import React from "react";
+import React, { useEffect, useState } from "react";
 import MaterialTable from 'material-table'
-import axiosHandler from "../utils/axiosHandler";
-import { Form, Row, Col, Card, Button } from '@themesberg/react-bootstrap';
+import axiosHandler from "../../utils/axiosHandler";
+import { Form, Row, Col, Card, Button, Container } from '@themesberg/react-bootstrap';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import common_function from "../utils/common_function";
+import common_function from "../../utils/common_function";
+import { Box } from '@mui/material';
+import { useDispatch, useSelector } from "react-redux"
+
 // As a component
 const MaterialTableConfig = (props) => {
   console.log('PROPS++++++++++++++', props)
@@ -121,7 +124,6 @@ const materialTableColumnData = async (columnDataUrl) => {
     console.log('MaterialTableConfig.js : materialTableColumnData : error : ', error)
     return []
   }
-  
 };
 
 /**
@@ -130,26 +132,91 @@ const materialTableColumnData = async (columnDataUrl) => {
  * @returns 
  */
 const MaterialTableDataEdit = (props) => {
-  try {
     // Fetch data from props
     const { setShowFlag, setDataForEditPage, dataForEditPage, columnsData, updateUrl} = props.data
-    console.log({ setDataForEditPage, dataForEditPage, columnsData: columnsData[0].columnData })
+    console.log('MaterialTableDataEdit: +++', { setDataForEditPage, dataForEditPage, columnsData: columnsData[0].columnData })
 
     // Function for hide MaterialTableDataEdit component. MaterialTable.showFlag (useState)
     const showTableData = () => {
       setShowFlag(false)
     }
 
-    // Create Input Fileds list. Using MaterialTable.columnsData and MaterialTable.dataForEditPage
+    const [ assignData, setAssignData ] = useState(dataForEditPage.rowData.assign)
+    let tabsAndOperationData = useSelector((state) => state.tabsAndOperationData)
+    
+    const handleCheckBoxChildChange = (fields) => {
+        const setData = tabsAndOperationData
+        if ('childOperationKey' in fields) {
+            setData[fields.parentKey][fields.childKey].operation[fields.childOperationKey] = !setData[fields.parentKey][fields.childKey].operation[fields.childOperation]
+        } else {
+            setData[fields.parentKey][fields.childKey].flag = !setData[fields.parentKey][fields.childKey].flag
+        }
+        setAssignData(setData)
+    };
+
+
+    const checkBoxFiledList = Object.keys(tabsAndOperationData).map(function(parent) {
+        return (
+            <Box key={parent} sx={{ display: 'flex', flexDirection: 'column', ml: 3 }}>
+            <label  key={parent}>{common_function.titleCase(parent.replace('_', ' '))}</label>
+            <Container>
+            <Row>
+            {
+                Object.keys(tabsAndOperationData[parent]).map(function(child) {
+                    const childFlag =  (parent in assignData && child in assignData[parent] && 'flag' in assignData[parent][child]) ? assignData[parent][child].flag : false
+                    tabsAndOperationData[parent][child].flag = childFlag
+                    return (
+                        <Col lg={4} md={4} sm={12} xs={12}  className="mb-3" key={child} >
+                            <label  >
+                                {`${child} `}
+                                <input type = "checkbox" name={parent+'-'+child} 
+                                    defaultChecked={childFlag}
+                                    onChange = {(event) => handleCheckBoxChildChange({ parentKey: parent, childKey: child, flag: !childFlag, event})}
+                                    />
+                                <br />
+                            </label>
+                            {
+                                Object.keys(tabsAndOperationData[parent][child].operation).map(function(childOperation) {
+                                    const operationFlag =  (parent in assignData && child in assignData[parent] && 'operation' in assignData[parent][child]) && childOperation in assignData[parent][child].operation ? assignData[parent][child].operation[childOperation] : false
+                                    tabsAndOperationData[parent][child].operation[childOperation] = operationFlag
+                                    return (
+                                        <Container key={childOperation}>
+                                            <label  >
+                                                {`${childOperation} `}
+                                                <input type = "checkbox" name={child+'-'+childOperation} 
+                                                    defaultChecked={operationFlag}
+                                                    onChange = {(event) => handleCheckBoxChildChange({ parentKey: parent, childKey: child, childOperationKey: childOperation, flag: !operationFlag, event})}
+                                                    />
+                                                <br />
+                                            </label>
+                                            {
+                                                
+                                            }
+                                        </Container>
+                                    )
+                                })
+                            }
+                        </Col>
+                    )
+                })
+            }
+            </Row>
+            </Container>
+            </Box>
+        )
+    });
+
     const inputFiledList = columnsData[0].columnData.map(function(key, index) {
-      const label = key.title
-      const value = dataForEditPage.rowData[key.field]
-      return (<Col lg={6} md={4} sm={12} xs={12}  className="mb-3" key={`${key.field}Col`} >
-                <Form.Group >
-                  <Form.Label >{label}</Form.Label>
-                  <Form.Control type="text" name={key.field} defaultValue={value} />
-                </Form.Group>
-              </Col>)
+        const label = key.title
+        const value = dataForEditPage.rowData[key.field]
+        if (key.field !== 'id') {
+            return (<Col lg={6} md={4} sm={12} xs={12}  className="mb-3" key={`${key.field}Col`} >
+                  <Form.Group >
+                    <Form.Label >{label}</Form.Label>
+                    <Form.Control type="text" name={key.field} defaultValue={value} />
+                  </Form.Group>
+                </Col>)
+        }
     });
 
     const handleSubmit = async (e, actions) => {
@@ -169,7 +236,6 @@ const MaterialTableDataEdit = (props) => {
       <Card.Header as="h5">
         <Row>
           <Col lg={6} md={6} sm={12} xs={12}  className="mb-3">
-            {/* <b>EDIT {((window.location.pathname.split("/")[1]).replace("_", " ")).toUpperCase()}</b> */}
             <b>{
               window.location.pathname.split("/").map((lists, key) => {
                 if (lists) {
@@ -187,7 +253,11 @@ const MaterialTableDataEdit = (props) => {
       <Row>
       <Form className="mb-12 editFormData" onSubmit={handleSubmit}>
         <Row>
+          <h6><b>Roles Description</b></h6>
           {inputFiledList}
+          <hr></hr>
+          <h6><b>Roles List</b></h6>
+          {checkBoxFiledList}
         </Row>
         <hr />
         <Row>
@@ -200,11 +270,19 @@ const MaterialTableDataEdit = (props) => {
       </Card.Body>
       </Card>
     );
-  } catch (error) {
-    console.log('MaterialTableConfig.js : materialTableColumnData : error : ', error)
-    return (<></>)
-  }
 };
+
+const fetchAnyData = async (url) => {
+    try {
+        const fetchData = await axiosHandler.request({ method: 'GET', requestUrl: url })
+        console.log('MaterialTableConfig.js : materialTableColumnData: fetchData : ', fetchData)
+        if (fetchData && fetchData.data && fetchData.data.length > 0) return fetchData.data
+        return [{}]
+    } catch (error) {
+        console.log('MaterialTableConfig.js : materialTableColumnData : error : ', error)
+        return [{}]
+    }
+}
 
 export {
   MaterialTableConfig, materialTableColumnData, MaterialTableDataEdit
