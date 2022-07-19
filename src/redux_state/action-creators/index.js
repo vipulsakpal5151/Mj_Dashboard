@@ -25,11 +25,56 @@ export const authTokenState = (token) => {
       }
  }
 
-export const tabsAndOperationData = (tabsAndOperationData) => {
+export const userPermissions = (userPermissions) => {
      return (dispatch) => {
          dispatch({
-              type: 'tabsAndOperationData',
-              payload: tabsAndOperationData
+              type: 'userPermissions',
+              payload: userPermissions
+         })
+      }
+ }
+
+ export const showEditCreatePageFlag = (showEditCreatePageFlag) => {
+     return (dispatch) => {
+         dispatch({
+              type: 'showEditCreatePageFlag',
+              payload: showEditCreatePageFlag
+         })
+      }
+ }
+
+ export const rowDataForEditCreatePage = (rowDataForEditCreatePage) => {
+     return (dispatch) => {
+         dispatch({
+              type: 'rowDataForEditCreatePage',
+              payload: rowDataForEditCreatePage
+         })
+      }
+ }
+
+ export const materialTableColumnData = (materialTableColumnData) => {
+     return (dispatch) => {
+         dispatch({
+              type: 'materialTableColumnData',
+              payload: materialTableColumnData
+         })
+      }
+ }
+
+ export const createPageFlag = (createPageFlag) => {
+     return (dispatch) => {
+         dispatch({
+              type: 'createPageFlag',
+              payload: createPageFlag
+         })
+      }
+ }
+
+ export const errorSuccessMsg = (errorSuccessMsg) => {
+     return (dispatch) => {
+         dispatch({
+              type: 'errorSuccessMsg',
+              payload: errorSuccessMsg
          })
       }
  }

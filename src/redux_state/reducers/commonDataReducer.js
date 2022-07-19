@@ -1,10 +1,10 @@
 const initialValue = {}
 
-const tabsAndOperationDataReducer = (state = initialValue, action) => {
-    if (action.type === 'tabsAndOperationData') return action.payload || {}
+const userPermissionsReducer = (state = initialValue, action) => {
+    if (action.type === 'userPermissions') return action.payload || {}
     else return state || {}
 }
 
 export default { 
-    tabsAndOperationDataReducer 
+    userPermissionsReducer 
 }

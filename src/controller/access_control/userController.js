@@ -1,217 +1,146 @@
 // Reference from HERE
 // https://github.com/vikas62081/material-table-YT/blob/serverSidePaginationSearchFilterSorting/src/App.js
-import React from "react";
-import MaterialTable from 'material-table'
+import React, { useState, useEffect } from "react";
 import axiosHandler from "../../utils/axiosHandler";
-import { Form, Row, Col, Card, Button } from '@themesberg/react-bootstrap';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import common_function from "../../utils/common_function";
+import { Form, Row, Col } from '@themesberg/react-bootstrap';
 import loggers from "../../utils/loggers";
+import { MaterialTableStructure, MaterialEditCreatePage } from '../commonFunctionController'
+import { useDispatch, useSelector } from "react-redux"
+import { bindActionCreators } from "redux"
+import actionCreators from "../../redux_state/index";
 
-// As a component
+/**
+ * Description: Use As a Component ************************
+ * @param {{ baseUrl: string }} props
+ * @returns {Promise <{ MaterialTableWithData: {} }>} 
+ */
 const MaterialTableConfig = (props) => {
-    loggers.logs('userController', 'MaterialTableConfig', 'props', JSON.stringify(props))
+  loggers.logs('userController', 'MaterialTableConfig', 'props', JSON.stringify(props))
 
-    // Create Theme For Material Table
-    const defaultMaterialTheme = createTheme({
-        palette: {
-        primary: {
-            main: '#4A16DA',
-            contrastText: 'white',
-        },
-        },
-    });
+  // Redux
+  const dispatch = useDispatch()
+  const actions = bindActionCreators(actionCreators, dispatch)
+  const materialTableColumnData  = useSelector((state) => state.materialTableColumnData)
+  loggers.logs('userController', 'MaterialTableConfig', 'materialTableColumnData', JSON.stringify(materialTableColumnData))
 
-    // Fetch data from logs
-    const { columnsData, baseUrl } = props
-    // const navigate = useNavigate();
-
-    // actionData for:  Material table action column. Like edit, view, delete
-    let actionData = [] 
-    if (columnsData && columnsData[0] && columnsData[0].columnData) {
-        columnsData[0].tableAction.map((lists, index ) => {
-            const dataForAction = {
-                icon: lists,
-                tooltip: `${lists} User`,
-                onClick: (event, rowData) => {
+  // actionData for:  Material table action column. Like edit, view, delete
+  let actionData = [] 
+  if (materialTableColumnData && materialTableColumnData[0] && materialTableColumnData[0].columnData) {
+    materialTableColumnData[0].tableAction.map((lists) => {
+          const dataForAction = {
+              icon: lists,
+              tooltip: `${lists} User`,
+              onClick: (event, rowData) => {
+                event.preventDefault();
                 console.log({ event, rowData })
-                props.data.setDataForEditPage({ event, rowData })
-                props.data.setShowFlag(true)
-                // navigate('/transactions', { state: { event, rowData } })
-                }
-            }
-            actionData.push(dataForAction)
-        })
+                actions.showEditCreatePageFlag(true)
+                actions.rowDataForEditCreatePage({ event, rowData })
+              }
+          }
+          actionData.push(dataForAction)
+      })
+  }
+
+  return (
+    <MaterialTableStructure data={{ ...props, actionData }}/>
+  );
+};
+
+const inputFiledList = ({ materialTableColumnData, dataBeforeEditTableShow, createPageFlag }) => {
+  loggers.logs('userController', 'inputFiledList', 'createPageFlag', createPageFlag)
+  return materialTableColumnData[0].columnData.map(function(key, index) {
+    const label = key.title
+    const rowDataForEditCreatePage = useSelector((state) => state.rowDataForEditCreatePage)
+    let value = rowDataForEditCreatePage && rowDataForEditCreatePage.rowData && rowDataForEditCreatePage.rowData[key.field] ? rowDataForEditCreatePage.rowData[key.field] : {}
+
+    let inputField;
+    if (('lookup' in key && typeof key.lookup === 'object')) {
+      inputField = <Form.Select name={key.field} { ...(createPageFlag ? {} : { defaultValue : value }) } >
+                    { Object.keys(key.lookup).map((objetcKey) => { 
+                        return ( <option key={objetcKey} value={objetcKey} >{key.lookup[objetcKey]}</option>) 
+                      })
+                    }
+                  </Form.Select>
+    } else if (key.field in dataBeforeEditTableShow) {
+      const selectDafaultValue = dataBeforeEditTableShow[key.field].find(o => o.optionDetails === value)
+      value = selectDafaultValue && selectDafaultValue.optionValue ? selectDafaultValue.optionValue : value
+      inputField = <Form.Select name={key.field} { ...(createPageFlag ? {} : { defaultValue : value }) } >
+                    { 
+                      dataBeforeEditTableShow[key.field].map((objetcKey) => {
+                        return (
+                          <option key={objetcKey.optionValue} value={objetcKey.optionValue} >{objetcKey.optionDetails}</option>
+                        )
+                      })
+                    }
+                  </Form.Select>
+    } else {
+      inputField = <Form.Control type="text" name={key.field} 
+                        {...(createPageFlag ? {} : 'readOnly' in key && key.readOnly === true ? { readOnly: true, value: value } : { defaultValue: value })} />
     }
 
-    return (
-        <Card>
-        <Card.Header as="h5">
-        <Row>
-            <Col lg={12} md={12} sm={12} xs={12}  className="mb-3">
-            <b>{
-                window.location.pathname.split("/").map((lists, key) => {
-                    if (lists) {
-                    return `${common_function.titleCase(lists.replace("_", " "))} ${key >= (window.location.pathname.split("/").length)-1 ? '' : ' > '}`
-                    }
-                })
-                } Table</b>
-            </Col>
-        </Row>
-        </Card.Header>
-        <Card.Body>
-        <Row>
-        <ThemeProvider theme={defaultMaterialTheme}>
-      <MaterialTable
-        actions={actionData}
-        title="Olympic Data"
-        columns={columnsData && columnsData[0] && columnsData[0].columnData ? columnsData[0].columnData : []}
-        options={{ debounceInterval: 700, padding: "dense", filtering: true, pageSize: 5 }}
-        data= {async (query) => {
-          try {
-            console.log('MaterialTableConfig.js : MaterialTableConfig: query : ', query)
-            // prepare your data and then call resolve like this:
-            let url = `${baseUrl}?`
-            //searching
-            if (query.search) url += `q=${query.search}`
-
-            //sorting 
-            if (query.orderBy) url += `&_sort=${query.orderBy.field}&_order=${query.orderDirection}`
-
-            //filtering
-            if (query.filters.length) {
-              const filter = query.filters.map(filter => {
-                return `&${filter.column.field}${filter.operator}${filter.value}`
-              })
-              url += filter.join('')
-            }
-            //pagination
-            url += `&_page=${query.page + 1}`
-            url += `&_limit=${query.pageSize}`
-
-            // fetch Table data
-            const tableData = await axiosHandler.request({ method: 'POST', requestUrl: baseUrl, data: query})
-            console.log('MaterialTableConfig.js : MaterialTableConfig: tableData : ', tableData)
-            if (tableData && tableData.data) {
-              return { data: tableData.data.merchantList, page: query.page, totalCount: parseInt(tableData.data.totalCount) }
-            }
-            return { data: [], page: query.page, totalCount: 0 }
-          } catch (error) {
-            console.log('MaterialTableConfig.js : MaterialTableConfig : error : ', error)
-            return {
-              data: [], page: query.page, totalCount: 0
-            }
-          }
-          }
-        }
-      />
-        </ThemeProvider>
-        </Row>
-        </Card.Body>
-        </Card>
-        
-    );
-};
+    return (<Col lg={6} md={4} sm={12} xs={12}  className="mb-3" key={`${key.field}Col`} >
+              <Form.Group >
+                <Form.Label >{label}</Form.Label>
+                  {inputField}
+                </Form.Group>
+            </Col>)
+  });
+}
 
 /**
- * Desciption : Use as a function. Fetch data for material table columns with additional data
- * @returns 
- */
- const materialTableColumnData = async (columnDataUrl) => {
-  try {
-    const fetchData = await axiosHandler.request({ method: 'POST', requestUrl: columnDataUrl })
-    console.log('MaterialTableConfig.js : materialTableColumnData: fetchData : ', fetchData.data)
-    if (fetchData && fetchData.data) return fetchData.data.fetchColumnData
-    return []
-  } catch (error) {
-    console.log('MaterialTableConfig.js : materialTableColumnData : error : ', error)
-    return []
-  }
-  
-};
-
-/**
- * Description : Use As a component. hide when MaterialTable.showFlag (useState) FALSE
- * @param {*} props 
- * @returns 
+ * Description: Use As a Component ************************
+ * @param {{ data: { updateUrl: String } }} }} props
+ * @returns {Promise <{ EditCreatePage: {} }>} 
  */
 const MaterialTableDataEdit = (props) => {
+  loggers.logs('userController', 'MaterialTableDataEdit', 'props', JSON.stringify(props))
+
+  // Redux
+  const materialTableColumnData  = useSelector((state) => state.materialTableColumnData)
+  const createPageFlag  = useSelector((state) => state.createPageFlag)
+  const dispatch = useDispatch()
+  const actions = bindActionCreators(actionCreators, dispatch)
+
+  // State : fetch some required data before showing EditCreatePage
+  const [dataBeforeEditTableShow, setDataBeforeEditTableShow] = useState({})
+  const fetchRequireData = async () => {
+    const dataBeforeEditTableShowRes = await axiosHandler.request({ method: 'POST', requestUrl: 'http://localhost:8082/roles/roles_details' })
+    loggers.logs('userController', 'MaterialTableDataEdit', 'dataBeforeEditTableShowRes', JSON.stringify(dataBeforeEditTableShowRes))
+    setDataBeforeEditTableShow({ role_name: dataBeforeEditTableShowRes.data.role_details })
+  }
+  useEffect(()=>{
+    fetchRequireData()
+  }, [])
+
   try {
-    // Fetch data from props
-    const { setShowFlag, setDataForEditPage, dataForEditPage, columnsData, updateUrl} = props.data
-    console.log({ setDataForEditPage, dataForEditPage, columnsData: columnsData[0].columnData })
-
     // Function for hide MaterialTableDataEdit component. MaterialTable.showFlag (useState)
-    const showTableData = () => {
-      setShowFlag(false)
-    }
-
-    // Create Input Fileds list. Using MaterialTable.columnsData and MaterialTable.dataForEditPage
-    const inputFiledList = columnsData[0].columnData.map(function(key, index) {
-      const label = key.title
-      const value = dataForEditPage.rowData[key.field]
-      return (<Col lg={6} md={4} sm={12} xs={12}  className="mb-3" key={`${key.field}Col`} >
-                <Form.Group >
-                  <Form.Label >{label}</Form.Label>
-                  <Form.Control type="text" name={key.field} defaultValue={value} />
-                </Form.Group>
-              </Col>)
-    });
-
-    const handleSubmit = async (e, actions) => {
+    const handleSubmit = async (e, setErrorSuccessMsg) => {
       e.preventDefault();
-      const formData = {}
-      columnsData[0].columnData.map(function(key) {
-        return formData[key.field] = e.target[key.field].value
-      });
-      console.log('Signin.js : handleSubmit : e : ', { e: e.target, formData, id: dataForEditPage.rowData.id })
-      const fetchData = await axiosHandler.request({ method: 'PUT', requestUrl: `${updateUrl}/${dataForEditPage.rowData.id}`, data: formData })
-      console.log('MaterialTableConfig.js : materialTableColumnData: fetchData : ', fetchData)
-      setShowFlag(false)
+      var formData = new FormData(e.target);
+      let formObject = Object.fromEntries(formData.entries());
+      loggers.logs('userController', 'MaterialTableDataEdit', 'formObject', JSON.stringify(formObject))
+
+      const updateUserData = await axiosHandler.request({ method: 'POST', requestUrl: `${(createPageFlag) ? props.data.createUrl : props.data.updateUrl}`, data: formObject })
+      loggers.logs('userController', 'MaterialTableDataEdit', 'updateUserData', JSON.stringify(updateUserData))
+      if (updateUserData.data.status === 200 ) {
+        actions.showEditCreatePageFlag(false) 
+        actions.createPageFlag(false)
+        setErrorSuccessMsg({ flag: false, message: '', type: '' })
+      }
+      setErrorSuccessMsg({ flag: true, message:  updateUserData && updateUserData.data && updateUserData.data.message ? updateUserData.data.message : 'Something Went Wrong!', type: 'danger' })
     };
 
-    return (
-      <Card>
-      <Card.Header as="h5">
-        <Row>
-          <Col lg={6} md={6} sm={12} xs={12}  className="mb-3">
-            {/* <b>EDIT {((window.location.pathname.split("/")[1]).replace("_", " ")).toUpperCase()}</b> */}
-            <b>{
-              window.location.pathname.split("/").map((lists, key) => {
-                if (lists) {
-                  return `${common_function.titleCase(lists.replace("_", " "))} ${key >= (window.location.pathname.split("/").length)-1 ? '' : ' > '}`
-                }
-              })
-            } Edit</b>
-          </Col>
-          <Col lg={6} md={6} sm={12} xs={12} className="text-end mb-3">
-            <p variant="secondary" size="sm" className="text-info" onClick={showTableData}><b>{'<< '}Go Back</b></p>
-          </Col>
-        </Row>
-      </Card.Header>
-      <Card.Body>
-      <Row>
-      <Form className="mb-12 editFormData" onSubmit={handleSubmit}>
-        <Row>
-          {inputFiledList}
-        </Row>
-        <hr />
-        <Row>
-          <Col lg={3} md={3} sm={12} xs={12}  className="mb-3">
-            <Button variant="success" type="submit" className="m-1">Success</Button>
-          </Col>
-        </Row>
-      </Form>
-      </Row>
-      </Card.Body>
-      </Card>
+    const inputFields = <Row> {inputFiledList({ materialTableColumnData, dataBeforeEditTableShow, createPageFlag })} </Row>
+
+    return ( 
+      < MaterialEditCreatePage data={{ handleSubmit, inputFields }}></MaterialEditCreatePage>  
     );
   } catch (error) {
-    console.log('MaterialTableConfig.js : materialTableColumnData : error : ', error)
+    loggers.logs('userController', 'MaterialTableDataEdit', 'error', JSON.stringify(error))
     return (<></>)
   }
 };
 
 export {
-  MaterialTableConfig, materialTableColumnData, MaterialTableDataEdit
+  MaterialTableConfig, MaterialTableDataEdit
 }

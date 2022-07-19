@@ -4,12 +4,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBell, faCog, faEnvelopeOpen, faSearch, faSignOutAlt, faUserShield } from "@fortawesome/free-solid-svg-icons";
 import { faUserCircle } from "@fortawesome/free-regular-svg-icons";
 import { Row, Col, Nav, Form, Image, Navbar, Dropdown, Container, ListGroup, InputGroup } from '@themesberg/react-bootstrap';
-
+import { useNavigate } from "react-router-dom";
 import NOTIFICATIONS_DATA from "../data/notifications";
 import Profile3 from "../assets/img/team/profile-picture-3.jpg";
-
+import util from '../utils/util'
+import common_function from '../utils/common_function'
 
 export default (props) => {
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState(NOTIFICATIONS_DATA);
   const areNotificationsRead = notifications.reduce((acc, notif) => acc && notif.read, true);
 
@@ -17,6 +19,11 @@ export default (props) => {
     setTimeout(() => {
       setNotifications(notifications.map(n => ({ ...n, read: true })));
     }, 300);
+  };
+
+  const logout = () => {
+    common_function.removeCookies(util.localStorageUserDetails)
+    navigate('/', { replace: true })
   };
 
 
@@ -108,7 +115,7 @@ export default (props) => {
 
                 <Dropdown.Divider />
 
-                <Dropdown.Item className="fw-bold">
+                <Dropdown.Item className="fw-bold" onClick={logout}>
                   <FontAwesomeIcon icon={faSignOutAlt} className="text-danger me-2" /> Logout
                 </Dropdown.Item>
               </Dropdown.Menu>

@@ -3,19 +3,29 @@ import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleLeft, faEnvelope, faUnlockAlt } from "@fortawesome/free-solid-svg-icons";
 // import { faFacebookF, faGithub, faTwitter } from "@fortawesome/free-brands-svg-icons";
-import { Col, Row, Form, Card, Button, FormCheck, Container, InputGroup } from '@themesberg/react-bootstrap';
+import { Col, Row, Form, Card, Button, FormCheck, Container, InputGroup, Alert } from '@themesberg/react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { RoutesPage } from "../../routes";
 import BgImage from "../../assets/img/illustrations/signin.svg";
 import loginController from "../../controller/login/loginController"
-import { Checkbox, FormControlLabel, Box } from '@mui/material';
+import dashboardController from "../../controller/dashboard/dashboardController";
+import loggers from "../../utils/loggers";
+import actionCreators from "../../redux_state/index";
+import { useDispatch } from "react-redux";
+import { bindActionCreators } from "redux"
+import common_function from "../../utils/common_function";
+import util from "../../utils/util";
+
+
 export default () => {
+  const dispatch = useDispatch()
+  const reduxActions = bindActionCreators(actionCreators, dispatch)
+
   const navigate = useNavigate();
   const initialValues = { email: "", password: "" };
   const [formValues, setFormValues] = useState(initialValues);
-  const [formErrors, setFormErrors] = useState({});
-  const [isSubmit, setIsSubmit] = useState(false);
+  const [ errorSuccessMsg, setErrorSuccessMsg ] = useState({ flag: false, message: '', type: '' })
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,34 +37,22 @@ export default () => {
     e.preventDefault();
     var data = new FormData(e.target);
     let formObject = Object.fromEntries(data.entries());
-    console.log('formObject',formObject);
-    console.log('Signin.js : handleSubmit : event : ', e.target)
-    const formData = {
-      email: e.target.email.value,
-      password: e.target.password.value
-    }
-    console.log('Signin.js : handleSubmit : e : ', formData)
-    e.preventDefault();
-    const validateForm = await validate(formData)
-    setFormErrors(validateForm);
-    console.log('Signin.js : handleSubmit : validateForm : ', validateForm)
-    if (Object.keys(validateForm).length < 1) {
-      const formSubmitValidation = await loginController.formSubmitValidation(formData, actions)
-      console.log('Signin.js : handleSubmit : formSubmitValidation : ', formSubmitValidation)
-      if (formSubmitValidation.status == 200) { 
-        console.log('Signin.js : handleSubmit : status : ', formSubmitValidation.status)
-        // navigate('/dashboard/overview', { replace: true })
-      }
-    }
-    // setIsSubmit(true);
-  };
+    loggers.logs('Signin.js', 'handleSubmit', 'formObject', JSON.stringify(formObject))
 
-  useEffect(() => {
-    console.log(formErrors);
-    if (Object.keys(formErrors).length === 0 && isSubmit) {
-      console.log(formValues);
+    const validateForm = await validate(formObject);
+    if (Object.keys(validateForm).length < 1) {
+      const formSubmitValidation = await loginController.formSubmitValidation(formObject, actions)
+      if (formSubmitValidation.status === 200) {
+        const userDetailsCookies = common_function.getCookies(util.localStorageUserDetails)
+        if (userDetailsCookies) {
+          const getUserpermission = await dashboardController.getUserpermission()
+          if (getUserpermission.status === 200) reduxActions.userPermissions(getUserpermission.data)
+        }
+        navigate('/dashboard/overview', { replace: true })
+      }
+      setErrorSuccessMsg({ flag: true, message: formSubmitValidation.message, type: formSubmitValidation.status === 200 ? 'success' : 'danger' })
     }
-  }, [formErrors]);
+  };
 
   const validate = (values) => {
     const errors = {};
@@ -75,36 +73,9 @@ export default () => {
     return errors;
   };
 
-
-  const [checked, setChecked] = React.useState([true, false]);
-
-  const handleChange1 = (event) => {
-    setChecked([event.target.checked, event.target.checked]);
-  };
-
-  const handleChange2 = (event) => {
-    setChecked([event.target.checked, checked[1]]);
-  };
-
-  const handleChange3 = (event) => {
-    setChecked([checked[0], event.target.checked]);
-  };
-
-  const children = (
-    <Box sx={{ display: 'flex', flexDirection: 'column', ml: 3 }}>
-      <FormControlLabel
-        label="Child 1"
-        control={<Checkbox checked={checked[0]} onChange={handleChange2} />}
-        name="child1"
-      />
-      <FormControlLabel
-        label="Child 2"
-        control={<Checkbox checked={checked[1]} onChange={handleChange3} />}
-        name="child2"
-      />
-    </Box>
-  );
-
+  const onClose = () => {
+    setErrorSuccessMsg({ flag: false, message: '', type: '' })
+  }
   return (
     <main>
       <section className="d-flex align-items-center my-5 mt-lg-6 mb-lg-5">
@@ -120,11 +91,21 @@ export default () => {
                 <div className="text-center text-md-center mb-4 mt-md-0">
                   <h3 className="mb-0">Sign in to our platform</h3>
                 </div>
-                {Object.keys(formErrors).length === 0 && isSubmit ? (
-                  <div className="ui message success">Signed in successfully</div>
-                ) : !formErrors.email || !formErrors.password ? (
-                  <pre>{JSON.stringify(formValues, undefined, 2)}</pre>
-                ) : ''}
+                {
+                  errorSuccessMsg.flag ?
+                  <React.Fragment>
+                      <Alert
+                          variant={errorSuccessMsg.type}>
+                          <div className="d-flex justify-content-between">
+                          <div>
+                              <strong>{errorSuccessMsg.message}</strong>
+                          </div>
+                          <Button variant="close" size="xs" onClick={() => onClose("danger")} />
+                          </div>
+                      </Alert>
+                  </React.Fragment> :
+                  <></>
+                }
                 <Form className="mt-4" onSubmit={handleSubmit}>
                   <Form.Group id="email" className="mb-4">
                     <Form.Label>Your Email</Form.Label>
@@ -135,7 +116,6 @@ export default () => {
                       <Form.Control autoFocus required type="email" name="email" placeholder="example@company.com" value={formValues.email} onChange={handleChange} />
                     </InputGroup>
                   </Form.Group>
-                  <p>{formErrors.email}</p>
                   <Form.Group>
                     <Form.Group id="password" className="mb-4">
                       <Form.Label>Your Password</Form.Label>
@@ -146,7 +126,6 @@ export default () => {
                         <Form.Control required type="password" name="password" placeholder="Password" value={formValues.password} onChange={handleChange} />
                       </InputGroup>
                     </Form.Group>
-                    <p>{formErrors.password}</p>
                     <div className="d-flex justify-content-between align-items-center mb-4">
                       <Form.Check type="checkbox">
                         <FormCheck.Input id="defaultCheck5" className="me-2" />
@@ -155,45 +134,10 @@ export default () => {
                       <Card.Link className="small text-end">Lost password?</Card.Link>
                     </div>
                   </Form.Group>
-                  <FormControlLabel
-                    label="Parent"
-                    control={
-                      <Checkbox
-                        checked={checked[0] && checked[1]}
-                        indeterminate={checked[0] !== checked[1]}
-                        onChange={handleChange1}
-                        name="parent1"
-                      />
-                    }
-                  />
-                  {children}
                   <Button variant="primary" type="submit" className="w-100">
                     Sign in
                   </Button>
                 </Form>
-
-                {/* <div className="mt-3 mb-4 text-center">
-                  <span className="fw-normal">or login with</span>
-                </div>
-                <div className="d-flex justify-content-center my-4">
-                  <Button variant="outline-light" className="btn-icon-only btn-pill text-facebook me-2">
-                    <FontAwesomeIcon icon={faFacebookF} />
-                  </Button>
-                  <Button variant="outline-light" className="btn-icon-only btn-pill text-twitter me-2">
-                    <FontAwesomeIcon icon={faTwitter} />
-                  </Button>
-                  <Button variant="outline-light" className="btn-icon-only btn-pil text-dark">
-                    <FontAwesomeIcon icon={faGithub} />
-                  </Button>
-                </div>
-                <div className="d-flex justify-content-center align-items-center mt-4">
-                  <span className="fw-normal">
-                    Not registered?
-                    <Card.Link as={Link} to={RoutesPage.Signup.path} className="fw-bold">
-                      {` Create account `}
-                    </Card.Link>
-                  </span>
-                </div> */}
               </div>
             </Col>
           </Row>
