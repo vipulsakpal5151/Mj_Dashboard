@@ -1,6 +1,6 @@
 import React from "react";
-import { MaterialTableConfig, MaterialTableDataEdit } from "../controller/access_control/userController";
-import request from '../utils/request.js'
+import { MaterialTableConfig, MaterialTableDataEdit } from "../../controller/access_control/roles_controller2"
+import request from '../../utils/request.js'
 import { useSelector } from "react-redux"
 // import loggers from "../utils/loggers";
 // import { bindActionCreators } from "redux"
@@ -8,8 +8,8 @@ import { useSelector } from "react-redux"
 
 export default () => {
   // Set URL's for material table
-  const url = request.access_control.users.viewUrl;
-  const columnDataUrl = request.access_control.users.fetchColumnDataUrl;
+  const url = request.access_control.roles.viewUrl;
+  const columnDataUrl = request.access_control.roles.fetchColumnDataUrl;
   const updateUrl = request.access_control.users.updateUrl
   const createUrl = request.access_control.users.createUrl
 

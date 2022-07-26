@@ -1,3 +1,4 @@
 export default {
-    localStorageUserDetails: 'userDetails'
+    localStorageUserDetails: 'userDetails',
+    materialTableAllowedActionList: { value: ['edit'] }
 }

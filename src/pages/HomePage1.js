@@ -6,13 +6,14 @@ import actionCreators from "../redux_state/index";
 import { useDispatch, useSelector } from "react-redux";
 import { bindActionCreators } from "redux"
 import loggers from '../utils/loggers';
+import NotFoundPage from "./examples/NotFound";
+import Preloader from '../components/Preloader';
 
 
 export default () => {
   const dispatch = useDispatch()
   const actions = bindActionCreators(actionCreators, dispatch)
   const sideBar  = useSelector((state) => state.userPermissions)
-  const [ sideBarFlag, setSideBarFlag ] = useState(true)
   loggers.logs('HomePage1.js', 'HomePage1', 'sideBar', JSON.stringify(sideBar))
   const fetchColumnData = async () => {
     const getUserpermission = await dashboardController.getUserpermission()
@@ -22,8 +23,9 @@ export default () => {
   }
   useEffect(()=>{
     fetchColumnData()
-  }, [sideBarFlag])
+  }, [])
   loggers.logs('HomePage1.js', 'HomePage1', 'sideBar22', JSON.stringify(sideBar))
+
   const components_List = componentsList.componentListForRoutes.map((lists, index ) => {
     const com = componentsList[lists.component]
     if (lists.parent in sideBar && lists.child in sideBar[lists.parent]) sideBar[lists.parent][lists.child].component = lists.component
@@ -48,6 +50,7 @@ export default () => {
 
   return (
     <Routes>
+      <Route exact path="*" element={<NotFoundPage />} />
       {components_List}
     </Routes>
   )

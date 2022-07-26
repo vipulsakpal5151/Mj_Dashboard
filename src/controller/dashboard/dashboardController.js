@@ -4,7 +4,7 @@ import axiosHandler from '../../utils/axiosHandler'
 import util from '../../utils/util'
 import loggers from "../../utils/loggers";
 import common_function from "../../utils/common_function";
-import { Navigate } from "react-router-dom";
+import { Navigate,useLocation } from "react-router-dom";
 import Preloader from "../../components/Preloader";
 import Sidebar from "../../components/Sidebar";
 import Navbar from "../../components/Navbar";
@@ -22,7 +22,9 @@ export const ProtectedRoute = ({ children }) => {
 
 export const CheckAlredyLoginOrNot = ({ children }) => {
   const userDetails = common_function.getCookies(util.localStorageUserDetails) || null
+  const location = useLocation();
   if (userDetails) {
+    if (location.pathname.split("/").length > 2) return <Navigate to={location.pathname} />;
     return <Navigate to="/dashboard/overview" />;
   }
   return children;
@@ -82,10 +84,11 @@ const getUserpermission = async () => {
   try {
     loggers.logs('dashboardController.js', 'getUserpermission', 'request', 'null')
     const userData = common_function.getCookies(util.localStorageUserDetails)
+    loggers.logs('dashboardController.js', 'getUserpermission', 'userData', userData)
     const requestData = userData && userData.email ? { email: userData.email } : null
     if (requestData) {
       const userPermissionsData = await axiosHandler.requestOnlyData({ method: 'POST', requestUrl: request.user_permissions, data: requestData })
-      loggers.logs('dashboardController.js', 'getUserpermission', 'request', JSON.stringify(userPermissionsData))
+      loggers.logs('dashboardController.js', 'getUserpermission', 'userPermissionsData', JSON.stringify(userPermissionsData))
       return userPermissionsData
     } else {
       return { status: 400, message: 'Fail', respcode: 1001 }

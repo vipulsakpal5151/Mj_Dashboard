@@ -6,9 +6,11 @@ import { Row, Col, Card, Form, Button, Alert, FontAwesomeIcon } from '@themesber
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import axiosHandler from "../../src/utils/axiosHandler";
 import common_function from "../../src/utils/common_function";
+import util from "../../src/utils/util";
 import { useDispatch, useSelector } from "react-redux"
 import { bindActionCreators } from "redux"
 import actionCreators from "../redux_state/index";
+import { useLocation } from "react-router-dom";
 
 /**
  * Description: Use As a Function
@@ -31,8 +33,12 @@ const MaterialTableStructure = (props) => {
     // Redux
     const dispatch = useDispatch()
     const actions = bindActionCreators(actionCreators, dispatch)
+    const userPermissionsData  = useSelector((state) => state.userPermissions)
+    const location = useLocation();
+    const pathObj = location.pathname.split("/")
 
-    const { baseUrl, actionData, columnDataUrl } = props.data
+    const { baseUrl, columnDataUrl } = props.data
+    const [ actionDataForMaterialTable, setActionDataForMaterialTable ] = useState([])
     const materialTableColumnData  = useSelector((state) => state.materialTableColumnData)
     // Create Theme For Material Table
     const defaultMaterialTheme = createTheme({
@@ -51,12 +57,32 @@ const MaterialTableStructure = (props) => {
 
     // Fetch Material table column data
     const fetchColumnData = async () => {
+        let actionDataForMaterial = []
+        if (Object.keys(userPermissionsData).length > 0) {
+            await Object.keys(userPermissionsData[pathObj[1]][pathObj[2]].actions).map((objetcKey) => {
+                if (util.materialTableAllowedActionList.value.includes(objetcKey) && userPermissionsData[pathObj[1]][pathObj[2]].actions[objetcKey] == true) {
+                    actionDataForMaterial.push({ 
+                        icon: objetcKey, 
+                        tooltip: `${objetcKey} ${pathObj[2]}`,
+                        onClick: (event, rowData) => {
+                            event.preventDefault();
+                            console.log({ event, rowData })
+                            actions.showEditCreatePageFlag(true)
+                            actions.rowDataForEditCreatePage({ event, rowData })
+                        }
+                    })
+                }
+            })
+        }
+        setActionDataForMaterialTable(actionDataForMaterial)
         const materialTableColumnDataRes = await materialTableColumnData1(columnDataUrl)
         actions.materialTableColumnData(materialTableColumnDataRes)
     }
     useEffect(()=>{
         fetchColumnData()
     }, [])
+
+    console.log('userPermissionsData  =====', userPermissionsData)
 
     return (
         <Card>
@@ -71,16 +97,20 @@ const MaterialTableStructure = (props) => {
                         })
                         } Table</b>
                     </Col>
-                    <Col lg={6} md={6} sm={12} xs={12} className="text-end mb-3">
-                        <Button variant="primary" onClick={openCreatePage}>Create {common_function.titleCase(window.location.pathname.split("/")[window.location.pathname.split("/").length-1])}</Button>
-                    </Col>
+                    {
+                        (userPermissionsData && userPermissionsData[pathObj[1]] && userPermissionsData[pathObj[1]][pathObj[2]] && userPermissionsData[pathObj[1]][pathObj[2]].actions && userPermissionsData[pathObj[1]][pathObj[2]].actions.create && userPermissionsData[pathObj[1]][pathObj[2]].actions.create == true) ?
+                        <Col lg={6} md={6} sm={12} xs={12} className="text-end mb-3">
+                            <Button variant="primary" onClick={openCreatePage}>Create {common_function.titleCase(window.location.pathname.split("/")[window.location.pathname.split("/").length-1])}</Button>
+                        </Col> : 
+                        <></>
+                    }
                 </Row>
             </Card.Header>
             <Card.Body>
                 <Row>
                 <ThemeProvider theme={defaultMaterialTheme}>
                 <MaterialTable
-                    actions={actionData}
+                    actions={actionDataForMaterialTable}
                     title={common_function.titleCase(window.location.pathname.split("/")[window.location.pathname.split("/").length-1]) + ' Data'}
                     columns={materialTableColumnData && materialTableColumnData[0] && materialTableColumnData[0].columnData ? materialTableColumnData[0].columnData : []}
                     options={{ debounceInterval: 700, padding: "dense", filtering: true, pageSize: 5, exportButton: true }}

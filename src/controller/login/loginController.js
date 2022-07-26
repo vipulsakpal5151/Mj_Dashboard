@@ -48,8 +48,11 @@ const formSubmitValidation = async (formData, actions) => {
     const loginResponse = await axiosHandler.requestWithoutToken(requestData)
     loggers.logs('loginController.js', 'onSubmitValidation', 'loginResponse', JSON.stringify(loginResponse))
     if (loginResponse && loginResponse.data && Object.keys(loginResponse.data).length > 0 && loginResponse.data.status === 200) {
+      loggers.logs('loginController.js', 'onSubmitValidation', 'if', 'if')
       localStorage.setItem(util.localStorageUserDetails, JSON.stringify({ email: formData.email, token: loginResponse.data.data.token }))
+      loggers.logs('loginController.js', 'onSubmitValidation', 'localStorage', 'localStorage')
       await common_function.setCookies(util.localStorageUserDetails, JSON.stringify({ email: formData.email, token: loginResponse.data.data.token }))
+      loggers.logs('loginController.js', 'onSubmitValidation', 'setCookies', 'setCookies')
       // console.log('cookies =====', cookies.get(util.localStorageUserDetails))
       // const retriveContacts = JSON.parse(localStorage.getItem(util.localStorageUserDetails))
       return { status: 200, message: loginResponse.data.message , respcode: 1000, token: loginResponse.data.data.token }

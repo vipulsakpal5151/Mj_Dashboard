@@ -42,12 +42,15 @@ export default () => {
     const validateForm = await validate(formObject);
     if (Object.keys(validateForm).length < 1) {
       const formSubmitValidation = await loginController.formSubmitValidation(formObject, actions)
+      loggers.logs('Signin.js', 'handleSubmit', 'formSubmitValidation', JSON.stringify(formSubmitValidation))
       if (formSubmitValidation.status === 200) {
         const userDetailsCookies = common_function.getCookies(util.localStorageUserDetails)
+        loggers.logs('Signin.js', 'handleSubmit', 'userDetailsCookies', userDetailsCookies)
         if (userDetailsCookies) {
           const getUserpermission = await dashboardController.getUserpermission()
           if (getUserpermission.status === 200) reduxActions.userPermissions(getUserpermission.data)
         }
+        loggers.logs('Signin.js', 'handleSubmit', 'navigate', true)
         navigate('/dashboard/overview', { replace: true })
       }
       setErrorSuccessMsg({ flag: true, message: formSubmitValidation.message, type: formSubmitValidation.status === 200 ? 'success' : 'danger' })

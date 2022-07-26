@@ -5,8 +5,8 @@ import { useLocation } from "react-router-dom";
 import { CSSTransition } from 'react-transition-group';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 // import { faBook, faBoxOpen, faChartPie, faCog, faFileAlt, faHandHoldingUsd, faSignOutAlt, faTable, faTimes, faCalendarAlt, faMapPin, faInbox, faRocket } from "@fortawesome/free-solid-svg-icons";
-import { faBoxOpen, faChartPie, faCog, faHandHoldingUsd, faSignOutAlt, faTable, faTimes, faRocket } from "@fortawesome/free-solid-svg-icons";
-import { Nav, Badge, Image, Button, Dropdown, Accordion, Navbar } from '@themesberg/react-bootstrap';
+import { faChartPie, faHandHoldingUsd, faSignOutAlt, faTable, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { Nav, Badge, Image, Button, Accordion, Navbar } from '@themesberg/react-bootstrap';
 import { Link } from 'react-router-dom';
 
 import { RoutesPage } from "../routes";
@@ -14,6 +14,10 @@ import { RoutesPage } from "../routes";
 import ReactHero from "../assets/img/technologies/react-hero-logo.svg";
 import ProfilePicture from "../assets/img/team/profile-picture-3.jpg";
 import common_function from "../utils/common_function";
+
+import { bindActionCreators } from "redux"
+import actionCreators from "../redux_state/index";
+import { useDispatch } from "react-redux"
 
 export default (propsData = {}) => {
   console.log('Sidebar Data ==== ', propsData.data.sideBar)
@@ -47,6 +51,13 @@ export default (propsData = {}) => {
     );
   };
 
+  // Redux
+  const dispatch = useDispatch()
+  const actions = bindActionCreators(actionCreators, dispatch)
+  const showTableData = () => {
+    actions.showEditCreatePageFlag(false)
+  }
+
   const NavItem = (props) => {
     const { title, link, external, target, icon, image, badgeText, badgeBg = "secondary", badgeColor = "primary" } = props;
     const classNames = badgeText ? "d-flex justify-content-start align-items-center justify-content-between" : "";
@@ -54,7 +65,10 @@ export default (propsData = {}) => {
     const linkProps = external ? { href: link } : { as: Link, to: link };
 
     return (
-      <Nav.Item className={navItemClassName} onClick={() => setShow(false)}>
+      <Nav.Item className={navItemClassName} onClick={() => {
+          setShow(false)
+          showTableData()
+        }}>
         <Nav.Link {...linkProps} target={target} className={classNames}>
           <span>
             {icon ? <span className="sidebar-icon"><FontAwesomeIcon icon={icon} /> </span> : null}

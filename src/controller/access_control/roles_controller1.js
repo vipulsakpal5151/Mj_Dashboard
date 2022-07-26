@@ -15,19 +15,19 @@ import actionCreators from "../../redux_state/index";
  * @returns {Promise <{ MaterialTableWithData: {} }>} 
  */
 const MaterialTableConfig = (props) => {
-  loggers.logs('userController', 'MaterialTableConfig', 'props', JSON.stringify(props))
+  loggers.logs('rolesController', 'MaterialTableConfig', 'props', JSON.stringify(props))
   return (
     <MaterialTableStructure data={{ ...props }}/>
   );
 };
 
-const inputFiledList = ({ materialTableColumnData, dataBeforeEditTableShow, createPageFlag }) => {
-  loggers.logs('userController', 'inputFiledList', 'createPageFlag', createPageFlag)
-  return materialTableColumnData[0].columnData.map(function(key, index) {
+const inputFiledList = ({ materialTableColumnData, dataBeforeEditTableShow, createPageFlag, rowDataForEditCreatePage, tabsAndOperationData }) => {
+  loggers.logs('rolesController', 'inputFiledList', 'createPageFlag', JSON.stringify({ materialTableColumnData, dataBeforeEditTableShow, createPageFlag, rowDataForEditCreatePage, tabsAndOperationData }))
+  loggers.logs('rolesController', 'inputFiledList', 'createPageFlag1', JSON.parse(rowDataForEditCreatePage.rowData.permissions))
+  const returnData = materialTableColumnData[0].columnData.map(function(key, index) {
     const label = key.title
-    const rowDataForEditCreatePage = useSelector((state) => state.rowDataForEditCreatePage)
+    // const rowDataForEditCreatePage = useSelector((state) => state.rowDataForEditCreatePage)
     let value = rowDataForEditCreatePage && rowDataForEditCreatePage.rowData && rowDataForEditCreatePage.rowData[key.field] ? rowDataForEditCreatePage.rowData[key.field] : {}
-
     let inputField;
     if (('lookup' in key && typeof key.lookup === 'object')) {
       inputField = <Form.Select name={key.field} { ...(createPageFlag ? {} : { defaultValue : value }) } >
@@ -60,6 +60,11 @@ const inputFiledList = ({ materialTableColumnData, dataBeforeEditTableShow, crea
                 </Form.Group>
             </Col>)
   });
+  return (
+    <>
+      {returnData}
+    </>
+  )
 }
 
 /**
@@ -68,20 +73,23 @@ const inputFiledList = ({ materialTableColumnData, dataBeforeEditTableShow, crea
  * @returns {Promise <{ EditCreatePage: {} }>} 
  */
 const MaterialTableDataEdit = (props) => {
-  loggers.logs('userController', 'MaterialTableDataEdit', 'props', JSON.stringify(props))
+  loggers.logs('rolesController', 'MaterialTableDataEdit', 'props', JSON.stringify(props))
 
   // Redux
   const materialTableColumnData  = useSelector((state) => state.materialTableColumnData)
   const createPageFlag  = useSelector((state) => state.createPageFlag)
   const dispatch = useDispatch()
   const actions = bindActionCreators(actionCreators, dispatch)
+  const rowDataForEditCreatePage = useSelector((state) => state.rowDataForEditCreatePage)
+  const tabsAndOperationData = useSelector((state) => state.tabsAndOperationData)
+  loggers.logs('rolesController', 'MaterialTableDataEdit', 'tabsAndOperationData', JSON.stringify(tabsAndOperationData))
 
   // State : fetch some required data before showing EditCreatePage
   const [dataBeforeEditTableShow, setDataBeforeEditTableShow] = useState({})
   const fetchRequireData = async () => {
-    const dataBeforeEditTableShowRes = await axiosHandler.request({ method: 'POST', requestUrl: 'http://localhost:8082/roles/roles_details' })
-    loggers.logs('userController', 'MaterialTableDataEdit', 'dataBeforeEditTableShowRes', JSON.stringify(dataBeforeEditTableShowRes))
-    setDataBeforeEditTableShow({ role_name: dataBeforeEditTableShowRes.data.role_details })
+    const dataBeforeEditTableShowRes = await axiosHandler.request({ method: 'POST', requestUrl: 'http://localhost:8082/roles/get_tab_operation_data' })
+    loggers.logs('rolesController', 'MaterialTableDataEdit', 'dataBeforeEditTableShowRes', JSON.stringify(dataBeforeEditTableShowRes))
+    setDataBeforeEditTableShow({ ...dataBeforeEditTableShowRes.data.data })
   }
   useEffect(()=>{
     fetchRequireData()
@@ -93,10 +101,10 @@ const MaterialTableDataEdit = (props) => {
       e.preventDefault();
       var formData = new FormData(e.target);
       let formObject = Object.fromEntries(formData.entries());
-      loggers.logs('userController', 'MaterialTableDataEdit', 'formObject', JSON.stringify(formObject))
+      loggers.logs('rolesController', 'MaterialTableDataEdit', 'formObject', JSON.stringify(formObject))
 
       const updateUserData = await axiosHandler.request({ method: 'POST', requestUrl: `${(createPageFlag) ? props.data.createUrl : props.data.updateUrl}`, data: formObject })
-      loggers.logs('userController', 'MaterialTableDataEdit', 'updateUserData', JSON.stringify(updateUserData))
+      loggers.logs('rolesController', 'MaterialTableDataEdit', 'updateUserData', JSON.stringify(updateUserData))
       if (updateUserData.data.status === 200 ) {
         actions.showEditCreatePageFlag(false) 
         actions.createPageFlag(false)
@@ -105,13 +113,13 @@ const MaterialTableDataEdit = (props) => {
       setErrorSuccessMsg({ flag: true, message:  updateUserData && updateUserData.data && updateUserData.data.message ? updateUserData.data.message : 'Something Went Wrong!', type: 'danger' })
     };
 
-    const inputFields = <Row> {inputFiledList({ materialTableColumnData, dataBeforeEditTableShow, createPageFlag })} </Row>
+    const inputFields = <Row> {inputFiledList({ materialTableColumnData, dataBeforeEditTableShow, createPageFlag, rowDataForEditCreatePage, tabsAndOperationData })} </Row>
 
     return ( 
       < MaterialEditCreatePage data={{ handleSubmit, inputFields }}></MaterialEditCreatePage>  
     );
   } catch (error) {
-    loggers.logs('userController', 'MaterialTableDataEdit', 'error', JSON.stringify(error))
+    loggers.logs('rolesController', 'MaterialTableDataEdit', 'error', JSON.stringify(error))
     return (<></>)
   }
 };

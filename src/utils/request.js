@@ -1,11 +1,18 @@
+const nodeApiBaseUrl = 'http://localhost:8082'
 export default {
     access_control: {
         users: {
-            viewUrl: 'http://localhost:8082/users',
-            fetchColumnDataUrl: 'http://localhost:8082/users/fetch_column_data',
-            updateUrl: 'http://localhost:8082/users/update',
-            createUrl: 'http://localhost:8082/users/create'
+            viewUrl: `${nodeApiBaseUrl}/users`,
+            fetchColumnDataUrl: `${nodeApiBaseUrl}/users/fetch_column_data`,
+            updateUrl: `${nodeApiBaseUrl}/users/update`,
+            createUrl: `${nodeApiBaseUrl}/users/create`
+        },
+        roles: {
+            viewUrl: `${nodeApiBaseUrl}/roles`,
+            fetchColumnDataUrl: `${nodeApiBaseUrl}/roles/fetch_column_data`,
+            updateUrl: `${nodeApiBaseUrl}/roles/update`,
+            createUrl: `${nodeApiBaseUrl}/roles/create`
         }
     },
-    user_permissions: 'http://localhost:8082/roles/user_permissions'
+    user_permissions: `${nodeApiBaseUrl}/roles/user_permissions`
 }

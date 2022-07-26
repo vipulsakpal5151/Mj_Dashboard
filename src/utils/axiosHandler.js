@@ -1,7 +1,6 @@
 import axiosConnection from "./axiosConnection"
 import util from '../utils/util'
 import common_function from '../utils/common_function'
-import Cookies from 'universal-cookie'
 
 const request = async ({ method, requestUrl = null, withBaseUrl = null, filterData = {}, data = {}, headers = {'content-type': 'application/json'} }) => {
     console.log('axiosHandler : request: fileds : ', { method, requestUrl, withBaseUrl, filterData, data, headers })

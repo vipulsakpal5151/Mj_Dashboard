@@ -9,8 +9,8 @@ import Lock from "./examples/Lock";
 import NotFoundPage from "./examples/NotFound";
 import ServerError from "./examples/ServerError";
 import MaterialTable from "./MaterialTable";
-import Users from "./Users";
-import Roles from "./Roles";
+import Users from "./access_control/Users";
+import Roles from "./access_control/Roles";
 
 
 // components
