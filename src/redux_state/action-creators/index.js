@@ -78,3 +78,12 @@ export const userPermissions = (userPermissions) => {
          })
       }
  }
+
+ export const dataBeforeEditTableShow = (dataBeforeEditTableShow) => {
+     return (dispatch) => {
+         dispatch({
+              type: 'dataBeforeEditTableShow',
+              payload: dataBeforeEditTableShow
+         })
+      }
+ }

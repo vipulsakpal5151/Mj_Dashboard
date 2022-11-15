@@ -1,19 +1,15 @@
 import React from "react";
-import { MaterialTableConfig, MaterialTableDataEdit } from "../../controller/access_control/roles_controller2"
+import { MaterialTableConfig, MaterialTableDataEdit } from "../../controller/access_control/roles_controller1"
 import request from '../../utils/request.js'
 import { useSelector } from "react-redux"
-// import loggers from "../utils/loggers";
-// import { bindActionCreators } from "redux"
-// import actionCreators from "../redux_state/index";
 
 export default () => {
   // Set URL's for material table
   const url = request.access_control.roles.viewUrl;
   const columnDataUrl = request.access_control.roles.fetchColumnDataUrl;
-  const updateUrl = request.access_control.users.updateUrl
-  const createUrl = request.access_control.users.createUrl
+  const updateUrl = request.access_control.roles.updateUrl
+  const createUrl = request.access_control.roles.createUrl
 
-  console.log('showEditCreatePageFlag', useSelector((state) => state.showEditCreatePageFlag))
   return (
     <>
       <div className="App">

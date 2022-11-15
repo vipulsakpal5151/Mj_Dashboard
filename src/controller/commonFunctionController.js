@@ -7,6 +7,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import axiosHandler from "../../src/utils/axiosHandler";
 import common_function from "../../src/utils/common_function";
 import util from "../../src/utils/util";
+import loggers from "../../src/utils/loggers";
 import { useDispatch, useSelector } from "react-redux"
 import { bindActionCreators } from "redux"
 import actionCreators from "../redux_state/index";
@@ -30,16 +31,20 @@ import { useLocation } from "react-router-dom";
 };
 
 const MaterialTableStructure = (props) => {
+    loggers.logs('rolesController1.js', 'MaterialTableStructure', 'props', JSON.stringify(props))
     // Redux
     const dispatch = useDispatch()
     const actions = bindActionCreators(actionCreators, dispatch)
     const userPermissionsData  = useSelector((state) => state.userPermissions)
+    const materialTableColumnData  = useSelector((state) => state.materialTableColumnData)
+
+    // path name for material table heading
     const location = useLocation();
     const pathObj = location.pathname.split("/")
 
     const { baseUrl, columnDataUrl } = props.data
     const [ actionDataForMaterialTable, setActionDataForMaterialTable ] = useState([])
-    const materialTableColumnData  = useSelector((state) => state.materialTableColumnData)
+
     // Create Theme For Material Table
     const defaultMaterialTheme = createTheme({
         palette: {
@@ -81,8 +86,7 @@ const MaterialTableStructure = (props) => {
     useEffect(()=>{
         fetchColumnData()
     }, [])
-
-    console.log('userPermissionsData  =====', userPermissionsData)
+    loggers.logs('rolesController1.js', 'MaterialTableStructure', 'userPermissionsData', JSON.stringify(userPermissionsData))
 
     return (
         <Card>
@@ -114,24 +118,22 @@ const MaterialTableStructure = (props) => {
                     title={common_function.titleCase(window.location.pathname.split("/")[window.location.pathname.split("/").length-1]) + ' Data'}
                     columns={materialTableColumnData && materialTableColumnData[0] && materialTableColumnData[0].columnData ? materialTableColumnData[0].columnData : []}
                     options={{ debounceInterval: 700, padding: "dense", filtering: true, pageSize: 5, exportButton: true }}
-                    data= {async (query) => {
-                    try {
-                        console.log('MaterialTableConfig.js : MaterialTableConfig: query : ', query)
-                        // fetch Table data
-                        const tableData = await axiosHandler.request({ method: 'POST', requestUrl: baseUrl, data: query})
-                        console.log('MaterialTableConfig.js : MaterialTableConfig: tableData : ', tableData)
-                        if (tableData && tableData.data) {
-                        return { data: tableData.data.merchantList, page: query.page, totalCount: parseInt(tableData.data.totalCount) }
+                    data= { async (query) => {
+                        try {
+                            loggers.logs('rolesController1.js', 'MaterialTableStructure', 'query', query)
+
+                            // fetch Table data
+                            const tableData = await axiosHandler.request({ method: 'POST', requestUrl: baseUrl, data: query})
+                            loggers.logs('rolesController1.js', 'MaterialTableStructure', 'tableData', tableData)
+                            if (tableData && tableData.data) {
+                                return { data: tableData.data.merchantList, page: query.page, totalCount: parseInt(tableData.data.totalCount) }
+                            }
+                            return { data: [], page: query.page, totalCount: 0 }
+                        } catch (error) {
+                            loggers.logs('rolesController1.js', 'MaterialTableStructure', 'error', error)
+                            return { data: [], page: query.page, totalCount: 0 }
                         }
-                        return { data: [], page: query.page, totalCount: 0 }
-                    } catch (error) {
-                        console.log('MaterialTableConfig.js : MaterialTableConfig : error : ', error)
-                        return {
-                        data: [], page: query.page, totalCount: 0
-                        }
-                    }
-                    }
-                    }
+                    }}
                 />
                 </ThemeProvider>
                 </Row>

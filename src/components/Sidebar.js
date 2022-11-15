@@ -18,6 +18,7 @@ import common_function from "../utils/common_function";
 import { bindActionCreators } from "redux"
 import actionCreators from "../redux_state/index";
 import { useDispatch } from "react-redux"
+import componentsList from '../../src/pages/componentsList';
 
 export default (propsData = {}) => {
   console.log('Sidebar Data ==== ', propsData.data.sideBar)

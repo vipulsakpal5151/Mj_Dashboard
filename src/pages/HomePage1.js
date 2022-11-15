@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Route, Routes } from "react-router-dom";
 import componentsList from './componentsList';
 import dashboardController, { ProtectedRoute, RouteWithLoader, RouteWithSidebar, CheckAlredyLoginOrNot } from '../controller/dashboard/dashboardController'
@@ -6,8 +6,7 @@ import actionCreators from "../redux_state/index";
 import { useDispatch, useSelector } from "react-redux";
 import { bindActionCreators } from "redux"
 import loggers from '../utils/loggers';
-import NotFoundPage from "./examples/NotFound";
-import Preloader from '../components/Preloader';
+import NotFoundPage from "./examples/NotFound"
 
 
 export default () => {
@@ -28,6 +27,7 @@ export default () => {
 
   const components_List = componentsList.componentListForRoutes.map((lists, index ) => {
     const com = componentsList[lists.component]
+    console.log('Sidebar =====++++++=====', sideBar,lists)
     if (lists.parent in sideBar && lists.child in sideBar[lists.parent]) sideBar[lists.parent][lists.child].component = lists.component
     // console.log('Lists =====', (lists.parent !== 'singleWithParent' ? lists.parent in sideBar : false))
     if (lists.parent === 'singleWithParent' || (lists.parent in sideBar && lists.child in sideBar[lists.parent] && sideBar[lists.parent][lists.child].flag === true)) {

@@ -13,6 +13,7 @@ const reducers = combineReducers({
     materialTableColumnData: materialTableReducer.materialTableColumnDataReduer,
     createPageFlag: materialTableReducer.createPageFlagReducer,
     errorSuccessMsg: materialTableReducer.errorSuccessMsgReducer,
+    dataBeforeEditTableShow: materialTableReducer.dataBeforeEditTableShowReducer,
 })
 
 export default reducers

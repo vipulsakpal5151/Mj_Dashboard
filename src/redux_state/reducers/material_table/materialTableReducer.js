@@ -4,6 +4,11 @@ const showEditCreatePageFlagReducer = (state = false, action) => {
     else return state
 }
 
+const dataBeforeEditTableShowReducer = (state = {}, action) => {
+    if (action.type === 'dataBeforeEditTableShow') return action.payload
+    else return state
+}
+
 const rowDataForEditCreatePageReducer = (state = {}, action) => {
     if (action.type === 'rowDataForEditCreatePage') return action.payload
     else return state
@@ -29,5 +34,6 @@ export default {
     rowDataForEditCreatePageReducer,
     materialTableColumnDataReduer,
     createPageFlagReducer,
-    errorSuccessMsgReducer
+    errorSuccessMsgReducer,
+    dataBeforeEditTableShowReducer
 }
